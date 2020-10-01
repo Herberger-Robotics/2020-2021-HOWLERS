@@ -27,13 +27,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.teleop.testing;
+package org.firstinspires.ftc.teamcode.teleop;
 
-import com.arcrobotics.ftclib.command.Command;
-import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -41,21 +38,23 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
 import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
 
-import java.nio.file.AtomicMoveNotSupportedException;
 
+@TeleOp(name="HowlersDrive", group="Iterative Opmode")
 
-@TeleOp(name="Drivetrain Testing", group="Iterative Opmode")
-
-public class DriveTrainTesting extends OpMode
+public class HowlersDrive extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     HowlersHardware robot = new HowlersHardware();
 
+    //BasicDrive basicDrive;
+    //ManualTurretController manualTurretController;
 
     GamepadEx driverOp = new GamepadEx(gamepad1);
     GamepadEx toolOp = new GamepadEx(gamepad2);
 
+    private PIDController _turretPID = new PIDController(new double[]{0.25 ,0 ,0});
+    private double _setPoint = 5 / 100;
 
 
     /*
@@ -63,8 +62,10 @@ public class DriveTrainTesting extends OpMode
      */
     @Override
     public void init() {
-        robot.init(hardwareMap, true, false);
+        robot.init(hardwareMap, true, true);
 
+        //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
+        //manualTurretController = new ManualTurretController(robot.turret, toolOp);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -84,6 +85,8 @@ public class DriveTrainTesting extends OpMode
     @Override
     public void start() {
         runtime.reset();
+        //CommandScheduler.getInstance().schedule(basicDrive);
+        //CommandScheduler.getInstance().schedule(manualTurretController);
     }
 
 
@@ -92,22 +95,11 @@ public class DriveTrainTesting extends OpMode
      */
     @Override
     public void loop() {
-        double rotation = driverOp.getLeftX();
-        double forward = driverOp.getLeftY();
-        double strafe = 0;
+        //CommandScheduler.getInstance().run();
+        //robot.flywheel.set(100);
+        robot.flywheel.set(1);
+        //PIDControlTurret(robot.turret);
 
-        boolean leftBumperState = driverOp.getButton(GamepadKeys.Button.LEFT_BUMPER);
-        boolean rightBumperState = driverOp.getButton(GamepadKeys.Button.RIGHT_BUMPER);
-
-        if (!leftBumperState && !rightBumperState) {
-            if (leftBumperState) {
-                strafe = 0.25;
-            } else if (rightBumperState) {
-                strafe = -0.25;
-            }
-        }
-
-        robot.driveTrain.drive(strafe, forward, rotation);
     }
 
     /*
@@ -115,12 +107,13 @@ public class DriveTrainTesting extends OpMode
      */
     @Override
     public void stop() {
-        robot.driveTrain.stop();
+        robot.turret.stop();
     }
 
 
     private void PIDControlTurret(Turret turret) {
-
+        //if(_turretPID.atSetPoint()){ turret.setSpeed(1); return;}
+        turret.setSpeed(_turretPID.calculate(turret.getCurrentTicks(), _setPoint));
     }
 
 
