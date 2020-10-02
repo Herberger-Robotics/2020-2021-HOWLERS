@@ -11,14 +11,14 @@ public class DriveTrain {
 
     private final MecanumDrive driveTrain;
 
-    public DriveTrain(final HardwareMap hwMap, final MecanumDrive mecanumDrive, HowlersHardware robot) {
+    public DriveTrain(final HardwareMap hwMap, HowlersHardware robot) {
         robot.rightFront = new HowlersMotor(hwMap, "rightFront", 145.6);
         robot.rightBack = new HowlersMotor(hwMap, "rightBack", 145.6);
         robot.leftBack = new HowlersMotor(hwMap, "leftBack", 145.6);
         robot.leftFront = new HowlersMotor(hwMap, "leftFront", 145.6);
         robot.mecanumDrive = new MecanumDrive(robot.leftFront, robot.rightFront, robot.leftBack, robot.rightBack);
 
-        driveTrain = mecanumDrive;
+        driveTrain = robot.mecanumDrive;
     }
 
     public void drive(double strafeSpeed, double forwardSpeed, double rotationSpeed) {

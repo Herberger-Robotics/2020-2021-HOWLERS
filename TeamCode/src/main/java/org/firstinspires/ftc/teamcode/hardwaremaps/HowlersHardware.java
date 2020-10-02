@@ -11,21 +11,21 @@ import org.firstinspires.ftc.teamcode.hardwaremaps.motors.HowlersMotor;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
 import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
 
+import java.lang.reflect.Array;
+import java.util.List;
+
 public class HowlersHardware {
 
     public HowlersMotor rightFront = null;
     public HowlersMotor rightBack = null;
     public HowlersMotor leftFront = null;
     public HowlersMotor leftBack = null;
-    public DriveTrain driveTrain = null;
-
-
+    public MecanumDrive mecanumDrive = null;
 
     public HowlersMotor flywheel = null;
 
-    public MecanumDrive mecanumDrive = null;
-
     public Turret turret = null;
+    public DriveTrain driveTrain = null;
 
 
     HardwareMap hwMap           =  null;
@@ -35,14 +35,17 @@ public class HowlersHardware {
 
     }
 
-    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret){
+    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret, boolean initIntake) {
         hwMap = ahwMap;
 
-        if(initDrivetrain) driveTrain = new DriveTrain(hwMap, mecanumDrive, this);
-        if(initTurret) turret = new Turret(hwMap, flywheel, this);
+        if(initDrivetrain) { driveTrain = new DriveTrain(hwMap, this); rightBack.setInverted(true); leftBack.setInverted(true); }
+        if(initTurret) turret = new Turret(hwMap, this);
 
+    }
 
-
+    public HowlersMotor initFlywheel() {
+        flywheel = new HowlersMotor(hwMap, "flywheel", 145.6);
+        return flywheel;
     }
 
 }

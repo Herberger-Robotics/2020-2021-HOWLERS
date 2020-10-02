@@ -62,7 +62,7 @@ public class HowlersDrive extends OpMode
      */
     @Override
     public void init() {
-        robot.init(hardwareMap, true, true);
+        robot.init(hardwareMap, true, true, false);
 
         //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
         //manualTurretController = new ManualTurretController(robot.turret, toolOp);

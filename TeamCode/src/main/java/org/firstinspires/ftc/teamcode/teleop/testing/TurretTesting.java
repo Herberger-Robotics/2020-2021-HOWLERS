@@ -58,7 +58,7 @@ public class TurretTesting extends OpMode
     GamepadEx toolOp = new GamepadEx(gamepad2);
 
     private PIDController _turretPID = new PIDController(new double[]{0.25 ,0 ,0});
-    private double _setPoint = 5 / 100;
+    private double _setPoint = 100;
 
 
     /*
@@ -66,7 +66,7 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void init() {
-        robot.init(hardwareMap, false, true);
+        robot.init(hardwareMap, false, true, false);
 
         //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
         //manualTurretController = new ManualTurretController(robot.turret, toolOp);
@@ -89,6 +89,7 @@ public class TurretTesting extends OpMode
     @Override
     public void start() {
         runtime.reset();
+        _turretPID.setSetPoint(_setPoint);
         //CommandScheduler.getInstance().schedule(basicDrive);
         //CommandScheduler.getInstance().schedule(manualTurretController);
     }
@@ -99,11 +100,8 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void loop() {
-        //CommandScheduler.getInstance().run();
-        //robot.flywheel.set(100);
         robot.flywheel.set(1);
-        //PIDControlTurret(robot.turret);
-
+        //_turretPID.control(robot.flywheel, _setPoint, robot.flywheel.get());
     }
 
     /*
@@ -112,12 +110,6 @@ public class TurretTesting extends OpMode
     @Override
     public void stop() {
         robot.turret.stop();
-    }
-
-
-    private void PIDControlTurret(Turret turret) {
-        //if(_turretPID.atSetPoint()){ turret.setSpeed(1); return;}
-        turret.setSpeed(_turretPID.calculate(turret.getCurrentTicks(), _setPoint));
     }
 
 

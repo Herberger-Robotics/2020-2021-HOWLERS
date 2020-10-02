@@ -53,8 +53,8 @@ public class DriveTrainTesting extends OpMode
     HowlersHardware robot = new HowlersHardware();
 
 
-    GamepadEx driverOp = new GamepadEx(gamepad1);
-    GamepadEx toolOp = new GamepadEx(gamepad2);
+    GamepadEx driverOp = null;
+    //GamepadEx toolOp = new GamepadEx(gamepad2);
 
 
 
@@ -63,11 +63,12 @@ public class DriveTrainTesting extends OpMode
      */
     @Override
     public void init() {
-        robot.init(hardwareMap, true, false);
+        robot.init(hardwareMap, true, false, false);
 
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
+        driverOp = new GamepadEx(gamepad1);
 
     }
 
@@ -92,20 +93,17 @@ public class DriveTrainTesting extends OpMode
      */
     @Override
     public void loop() {
-        double rotation = driverOp.getLeftX();
-        double forward = driverOp.getLeftY();
+        double speed = 0.25;
+        double rotation = driverOp.getLeftX() * speed;
+        double forward = driverOp.getLeftY() * speed;
         double strafe = 0;
 
         boolean leftBumperState = driverOp.getButton(GamepadKeys.Button.LEFT_BUMPER);
         boolean rightBumperState = driverOp.getButton(GamepadKeys.Button.RIGHT_BUMPER);
 
-        if (!leftBumperState && !rightBumperState) {
-            if (leftBumperState) {
-                strafe = 0.25;
-            } else if (rightBumperState) {
-                strafe = -0.25;
-            }
-        }
+        if(leftBumperState && rightBumperState) {strafe = 0; }
+        else if (leftBumperState) { strafe = 1 * speed; }
+        else if (rightBumperState) { strafe = -1 * speed; }
 
         robot.driveTrain.drive(strafe, forward, rotation);
     }
@@ -116,11 +114,6 @@ public class DriveTrainTesting extends OpMode
     @Override
     public void stop() {
         robot.driveTrain.stop();
-    }
-
-
-    private void PIDControlTurret(Turret turret) {
-
     }
 
 
