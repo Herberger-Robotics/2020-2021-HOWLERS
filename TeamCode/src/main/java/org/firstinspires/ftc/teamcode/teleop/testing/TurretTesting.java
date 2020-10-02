@@ -58,7 +58,7 @@ public class TurretTesting extends OpMode
     GamepadEx toolOp = new GamepadEx(gamepad2);
 
     private PIDController _turretPID = new PIDController(new double[]{0.25 ,0 ,0});
-    private double _setPoint = 100;
+    private double _setPoint = 1;
 
 
     /*
@@ -100,8 +100,8 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void loop() {
-        robot.flywheel.set(1);
-        //_turretPID.control(robot.flywheel, _setPoint, robot.flywheel.get());
+        //robot.flywheel.set(1);
+        _turretPID.control(robot.flywheel, _setPoint, robot.flywheel.get());
     }
 
     /*
