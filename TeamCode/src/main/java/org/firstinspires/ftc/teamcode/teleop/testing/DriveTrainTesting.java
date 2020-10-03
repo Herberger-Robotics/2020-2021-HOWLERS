@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode.teleop.testing;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -52,9 +54,15 @@ public class DriveTrainTesting extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     HowlersHardware robot = new HowlersHardware();
 
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+
+
+
 
     GamepadEx driverOp = null;
     //GamepadEx toolOp = new GamepadEx(gamepad2);
+
+    double counter = 0;
 
 
 
@@ -93,6 +101,12 @@ public class DriveTrainTesting extends OpMode
      */
     @Override
     public void loop() {
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("x", counter);
+
+        dashboard.sendTelemetryPacket(packet);
+
         double speed = 0.25;
         double rotation = driverOp.getLeftX() * speed;
         double forward = driverOp.getLeftY() * speed;

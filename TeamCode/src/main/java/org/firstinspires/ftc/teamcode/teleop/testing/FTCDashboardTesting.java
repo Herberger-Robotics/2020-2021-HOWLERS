@@ -36,8 +36,10 @@ import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
@@ -46,25 +48,23 @@ import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
 import java.nio.file.AtomicMoveNotSupportedException;
 
 
-@TeleOp(name="Turret Testing", group="Iterative Opmode")
+@TeleOp(name="Dashboard Testing", group="Iterative Opmode")
 
-public class TurretTesting extends OpMode
+public class FTCDashboardTesting extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     HowlersHardware robot = new HowlersHardware();
 
-    //BasicDrive basicDrive;
-    //ManualTurretController manualTurretController;
-
-    GamepadEx driverOp = new GamepadEx(gamepad1);
-    GamepadEx toolOp = new GamepadEx(gamepad2);
-
-    private PIDController _turretPID;
-    private double _setPoint = 1;
-
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    TelemetryPacket packet = new TelemetryPacket();
+
+
+
+
+    GamepadEx driverOp = null;
+    //GamepadEx toolOp = new GamepadEx(gamepad2);
+
+    double counter = 0;
 
 
     @Config
@@ -76,20 +76,18 @@ public class TurretTesting extends OpMode
         // other constants
     }
 
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-        robot.init(hardwareMap, false, true, false);
+        robot.init(hardwareMap, false, false, false);
 
-        _turretPID = new PIDController(new double[]{RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD});
-
-        //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
-        //manualTurretController = new ManualTurretController(robot.turret, toolOp);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
+        driverOp = new GamepadEx(gamepad1);
 
     }
 
@@ -106,9 +104,6 @@ public class TurretTesting extends OpMode
     @Override
     public void start() {
         runtime.reset();
-        _turretPID.setSetPoint(_setPoint);
-        //CommandScheduler.getInstance().schedule(basicDrive);
-        //CommandScheduler.getInstance().schedule(manualTurretController);
     }
 
 
@@ -117,9 +112,11 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void loop() {
-        //robot.flywheel.set(1);
-        _turretPID.control(robot.flywheel, _setPoint, robot.flywheel.get());
-        packet.put("flywheelVelocity", robot.flywheel.get());
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("x", counter);
+        counter++;
+
         dashboard.sendTelemetryPacket(packet);
     }
 
@@ -128,7 +125,7 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void stop() {
-        robot.turret.stop();
+        //robot.driveTrain.stop();
     }
 
 
