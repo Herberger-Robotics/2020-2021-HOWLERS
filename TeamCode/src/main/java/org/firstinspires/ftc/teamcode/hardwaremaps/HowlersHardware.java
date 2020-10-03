@@ -28,7 +28,7 @@ public class HowlersHardware {
     public DriveTrain driveTrain = null;
 
 
-    HardwareMap hwMap           =  null;
+    HardwareMap hwMap =  null;
     private ElapsedTime period  = new ElapsedTime();
 
     public HowlersHardware(){

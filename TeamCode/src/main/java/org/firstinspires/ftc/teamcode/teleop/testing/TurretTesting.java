@@ -32,9 +32,11 @@ package org.firstinspires.ftc.teamcode.teleop.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.arcrobotics.ftclib.Robot;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -60,8 +62,7 @@ public class TurretTesting extends OpMode
     GamepadEx driverOp = new GamepadEx(gamepad1);
     GamepadEx toolOp = new GamepadEx(gamepad2);
 
-    private PIDController _turretPID;
-    private double _setPoint = 1;
+    private PIDFController _turretPID;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
@@ -69,9 +70,13 @@ public class TurretTesting extends OpMode
 
     @Config
     public static class RobotConstants {
-        public static double flywheelP = 0;
+        public static double flywheelP = 0.1;
         public static double flywheelI = 0;
         public static double flywheelD = 0;
+        public static double flywheelF = 0.1;
+        public static double SPEED_OVERRIDE = 0;
+        public static double flywheelSETPOINT = 1;
+        public static double flywheelTOLERANCE = 0.01;
 
         // other constants
     }
@@ -83,7 +88,7 @@ public class TurretTesting extends OpMode
     public void init() {
         robot.init(hardwareMap, false, true, false);
 
-        _turretPID = new PIDController(new double[]{RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD});
+        _turretPID = new PIDController(new double[]{RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF});
 
         //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
         //manualTurretController = new ManualTurretController(robot.turret, toolOp);
@@ -106,7 +111,9 @@ public class TurretTesting extends OpMode
     @Override
     public void start() {
         runtime.reset();
-        _turretPID.setSetPoint(_setPoint);
+        _turretPID.setSetPoint(RobotConstants.flywheelSETPOINT);
+        _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
+        //_turretPID.control(robot.flywheel);
         //CommandScheduler.getInstance().schedule(basicDrive);
         //CommandScheduler.getInstance().schedule(manualTurretController);
     }
@@ -117,9 +124,26 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void loop() {
+        _turretPID.setSetPoint(RobotConstants.flywheelSETPOINT);
+        _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
+        _turretPID.setPIDF(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
+
         //robot.flywheel.set(1);
-        _turretPID.control(robot.flywheel, _setPoint, robot.flywheel.get());
+        if(RobotConstants.SPEED_OVERRIDE > 0) {
+            robot.flywheel.set(RobotConstants.SPEED_OVERRIDE);
+        } else {
+            if(_turretPID.atSetPoint()) {
+                robot.flywheel.set(1);
+            } else {
+                robot.flywheel.set(_turretPID.calculate(robot.flywheel.get()));
+            }
+
+        }
+
         packet.put("flywheelVelocity", robot.flywheel.get());
+        packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.get()));
+        packet.put("PIDPositionError", _turretPID.getPositionError());
+
         dashboard.sendTelemetryPacket(packet);
     }
 

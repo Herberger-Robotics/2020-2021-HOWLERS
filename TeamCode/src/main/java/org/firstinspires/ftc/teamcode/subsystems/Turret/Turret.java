@@ -26,6 +26,7 @@ public class Turret {
 
     public Turret(final HardwareMap hwMap, HowlersHardware robot) {
         robot.flywheel = new HowlersMotor(hwMap, "flywheel", 145.6);
+        robot.flywheel.setInverted(true);
         m_flywheel = robot.flywheel;
     }
 
