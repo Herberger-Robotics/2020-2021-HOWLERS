@@ -57,8 +57,8 @@ public class HowlersMotor implements Motor {
         set(0);
     }
 
-    public double getEncoderCount() {
-        return m_motor.getCurrentPosition() - resetVal;
+    public int getEncoderCount() {
+        return (int) (m_motor.getCurrentPosition() - resetVal);
     }
 
     public void resetEncoder() {
@@ -68,5 +68,17 @@ public class HowlersMotor implements Motor {
     public double getNumRevolutions() {
         return getEncoderCount() / TICKS_PER_REV;
     }
+
+    public void setTarget(int target){m_motor.setTargetPosition(target);}
+
+    public boolean busy(){return m_motor.isBusy(); }
+
+    public void runToPosition(){m_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);}
+
+    public void runUsingEncoder(){m_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);}
+
+    public void runWithoutEncoder(){m_motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);}
+
+
 
 }
