@@ -43,9 +43,4 @@ public class HowlersHardware {
 
     }
 
-    public HowlersMotor initFlywheel() {
-        flywheel = new HowlersMotor(hwMap, "flywheel", 145.6);
-        return flywheel;
-    }
-
 }

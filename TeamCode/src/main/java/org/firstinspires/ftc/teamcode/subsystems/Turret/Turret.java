@@ -25,7 +25,7 @@ public class Turret {
     private HowlersMotor m_flywheel;
 
     public Turret(final HardwareMap hwMap, HowlersHardware robot) {
-        robot.initFlywheel();
+        robot.flywheel = new HowlersMotor(hwMap, "flywheel", 145.6);
         m_flywheel = robot.flywheel;
     }
 
