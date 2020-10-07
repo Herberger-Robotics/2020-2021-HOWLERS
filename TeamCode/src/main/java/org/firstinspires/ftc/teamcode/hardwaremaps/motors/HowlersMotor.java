@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class HowlersMotor implements Motor {
-
     private DcMotor m_motor;
     private double resetVal;
 
@@ -62,7 +61,7 @@ public class HowlersMotor implements Motor {
     }
 
     public void resetEncoder() {
-        resetVal += getEncoderCount();
+        resetVal = m_motor.getCurrentPosition();
     }
 
     public double getNumRevolutions() {
@@ -78,6 +77,13 @@ public class HowlersMotor implements Motor {
     public void runUsingEncoder(){m_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);}
 
     public void runWithoutEncoder(){m_motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);}
+
+    public double calculateRPM(){
+        double count = this.getEncoderCount() / 145.6;
+        double currentRPM = count / 3000;
+        this.resetEncoder();
+        return currentRPM;
+    }
 
 
 

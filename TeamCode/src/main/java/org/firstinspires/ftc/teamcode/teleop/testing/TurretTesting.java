@@ -67,15 +67,17 @@ public class TurretTesting extends OpMode
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
 
+    double currentRPM = 0;
+
 
     @Config
     public static class RobotConstants {
-        public static double flywheelP = 0.1;
+        public static double flywheelP = 10;
         public static double flywheelI = 0;
         public static double flywheelD = 0;
-        public static double flywheelF = 0.1;
+        public static double flywheelF = 0;
         public static double SPEED_OVERRIDE = 0;
-        public static double flywheelSETPOINT = 1;
+        public static double flywheelSETPOINT = 1000;
         public static double flywheelTOLERANCE = 0.01;
 
         // other constants
@@ -124,6 +126,9 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void loop() {
+
+        currentRPM = robot.flywheel.calculateRPM();
+
         _turretPID.setSetPoint(RobotConstants.flywheelSETPOINT);
         _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
         _turretPID.setPIDF(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
@@ -135,14 +140,15 @@ public class TurretTesting extends OpMode
             if(_turretPID.atSetPoint()) {
                 robot.flywheel.set(1);
             } else {
-                robot.flywheel.set(_turretPID.calculate(robot.flywheel.get()));
+                robot.flywheel.set(_turretPID.calculate(currentRPM));
             }
 
         }
 
-        packet.put("flywheelVelocity", robot.flywheel.get());
+        packet.put("flywheelSetSpeed", robot.flywheel.get());
         packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.get()));
         packet.put("PIDPositionError", _turretPID.getPositionError());
+        packet.put("Current RPM", currentRPM);
 
         dashboard.sendTelemetryPacket(packet);
     }
