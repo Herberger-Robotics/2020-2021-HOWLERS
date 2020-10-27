@@ -32,27 +32,21 @@ package org.firstinspires.ftc.teamcode.teleop.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.arcrobotics.ftclib.command.Command;
-import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.vision.UGContourRingDetector;
+import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
+import com.arcrobotics.ftclib.vision.UGRectRingPipeline;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
-import org.firstinspires.ftc.teamcode.subsystems.Camera.CameraPipeline;
-import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
+import org.firstinspires.ftc.teamcode.subsystems.Camera.RingDetector;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
-
-import java.nio.file.AtomicMoveNotSupportedException;
 
 
 @TeleOp(name="OpenCV Testing", group="Iterative Opmode")
@@ -69,18 +63,18 @@ public class OpenCVTesting extends OpMode
     GamepadEx driverOp = new GamepadEx(gamepad1);
     GamepadEx toolOp = new GamepadEx(gamepad2);
 
-    CameraPipeline cameraPipeline;
+
     OpenCvCamera phoneCamera;
 
     private PIDFController _turretPID;
+
+    private RingDetector ringDetector;
+    private double ringHeight = 0;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
 
     double currentVelocity = 0;
-
-    public UGContourRingDetector ringDetector;
-
 
     @Config
     public static class RobotConstants {
@@ -102,24 +96,18 @@ public class OpenCVTesting extends OpMode
     @Override
     public void init() {
         robot.init(hardwareMap, false, false, false);
-        ringDetector = new UGContourRingDetector(hardwareMap, telemetry, true);
+        //ringDetector = new UGContourRingDetector(hardwareMap, telemetry, true);
         //FtcDashboard.getInstance().startCameraStream(, 0);
-        /*
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCamera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
 
-        phoneCamera.openCameraDevice();
-
-        cameraPipeline = new CameraPipeline();
-        phoneCamera.setPipeline(cameraPipeline);
-
-
-        phoneCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        ringDetector = new RingDetector(phoneCamera);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
 
-         */
+
 
     }
 
@@ -148,6 +136,13 @@ public class OpenCVTesting extends OpMode
     @Override
     public void loop() {
 
+        switch(ringDetector.getHeight()) {
+            case ZERO: ringHeight = 0; break;
+            case ONE: ringHeight = 1; break;
+            case FOUR: ringHeight = 3; break;
+        }
+
+        packet.put("height", ringHeight);
         dashboard.sendTelemetryPacket(packet);
     }
 
@@ -156,7 +151,6 @@ public class OpenCVTesting extends OpMode
      */
     @Override
     public void stop() {
-        robot.turret.stop();
     }
 
 
