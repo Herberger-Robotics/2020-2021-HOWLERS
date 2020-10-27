@@ -3,16 +3,17 @@ package org.firstinspires.ftc.teamcode.hardwaremaps.motors;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class HowlersMotor implements Motor {
-    private DcMotor m_motor;
+public class HowlersMotor extends Motor {
+    private DcMotorEx m_motor;
     private double resetVal;
 
     public static double TICKS_PER_REV;
 
     public HowlersMotor(HardwareMap hMap, String name, double TPR) {
-        m_motor = hMap.get(DcMotor.class, name);
+        m_motor = hMap.get(DcMotorEx.class, name);
         TICKS_PER_REV = TPR;
     }
 
@@ -46,7 +47,6 @@ public class HowlersMotor implements Motor {
         return null;
     }
 
-    @Override
     public void pidWrite(double output) {
         set(output);
     }
@@ -85,6 +85,12 @@ public class HowlersMotor implements Motor {
         return currentRPM;
     }
 
+    public double getVelocity() {
+        return m_motor.getVelocity();
+    }
 
 
+    public void setVelocity(double velocity) {
+        m_motor.setVelocity(velocity);
+    }
 }

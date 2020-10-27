@@ -32,7 +32,6 @@ package org.firstinspires.ftc.teamcode.teleop.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.arcrobotics.ftclib.Robot;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -67,7 +66,7 @@ public class TurretTesting extends OpMode
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
 
-    double currentRPM = 0;
+    double currentVelocity = 0;
 
 
     @Config
@@ -79,6 +78,7 @@ public class TurretTesting extends OpMode
         public static double SPEED_OVERRIDE = 0;
         public static double flywheelSETPOINT = 1000;
         public static double flywheelTOLERANCE = 0.01;
+        public static boolean invertFlywheel = true;
 
         // other constants
     }
@@ -89,8 +89,8 @@ public class TurretTesting extends OpMode
     @Override
     public void init() {
         robot.init(hardwareMap, false, true, false);
-
-        _turretPID = new PIDController(new double[]{RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF});
+        robot.flywheel.setInverted(RobotConstants.invertFlywheel);
+        _turretPID = new PIDFController(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
 
         //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
         //manualTurretController = new ManualTurretController(robot.turret, toolOp);
@@ -127,7 +127,7 @@ public class TurretTesting extends OpMode
     @Override
     public void loop() {
 
-        currentRPM = robot.flywheel.calculateRPM();
+        currentVelocity = robot.flywheel.getVelocity();
 
         _turretPID.setSetPoint(RobotConstants.flywheelSETPOINT);
         _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
@@ -137,18 +137,15 @@ public class TurretTesting extends OpMode
         if(RobotConstants.SPEED_OVERRIDE > 0) {
             robot.flywheel.set(RobotConstants.SPEED_OVERRIDE);
         } else {
-            if(_turretPID.atSetPoint()) {
-                robot.flywheel.set(1);
-            } else {
-                robot.flywheel.set(_turretPID.calculate(currentRPM));
-            }
+                //robot.flywheel.set(1);
+                robot.flywheel.setVelocity(_turretPID.calculate(robot.flywheel.getVelocity()));
 
         }
 
         packet.put("flywheelSetSpeed", robot.flywheel.get());
-        packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.get()));
+        packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.getVelocity()));
         packet.put("PIDPositionError", _turretPID.getPositionError());
-        packet.put("Current RPM", currentRPM);
+        packet.put("Current Velocity", currentVelocity);
 
         dashboard.sendTelemetryPacket(packet);
     }

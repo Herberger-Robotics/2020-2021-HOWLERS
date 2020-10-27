@@ -27,21 +27,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.teleop;
+package org.firstinspires.ftc.teamcode.teleop.testing;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.vision.UGContourRingDetector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
+import org.firstinspires.ftc.teamcode.subsystems.Camera.CameraPipeline;
 import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera;
+
+import java.nio.file.AtomicMoveNotSupportedException;
 
 
-@TeleOp(name="HowlersDrive", group="Iterative Opmode")
+@TeleOp(name="OpenCV Testing", group="Iterative Opmode")
 
-public class HowlersDrive extends OpMode
+public class OpenCVTesting extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -53,22 +69,57 @@ public class HowlersDrive extends OpMode
     GamepadEx driverOp = new GamepadEx(gamepad1);
     GamepadEx toolOp = new GamepadEx(gamepad2);
 
-    private PIDController _turretPID = new PIDController(0.25 ,0 ,0);
-    private double _setPoint = 5 / 100;
+    CameraPipeline cameraPipeline;
+    OpenCvCamera phoneCamera;
 
+    private PIDFController _turretPID;
+
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    TelemetryPacket packet = new TelemetryPacket();
+
+    double currentVelocity = 0;
+
+    public UGContourRingDetector ringDetector;
+
+
+    @Config
+    public static class RobotConstants {
+        public static double flywheelP = 10;
+        public static double flywheelI = 0;
+        public static double flywheelD = 0;
+        public static double flywheelF = 0;
+        public static double SPEED_OVERRIDE = 0;
+        public static double flywheelSETPOINT = 1000;
+        public static double flywheelTOLERANCE = 0.01;
+        public static boolean invertFlywheel = true;
+
+        // other constants
+    }
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-        robot.init(hardwareMap, true, true, false);
+        robot.init(hardwareMap, false, false, false);
+        ringDetector = new UGContourRingDetector(hardwareMap, telemetry, true);
+        //FtcDashboard.getInstance().startCameraStream(, 0);
+        /*
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        phoneCamera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
 
-        //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
-        //manualTurretController = new ManualTurretController(robot.turret, toolOp);
+        phoneCamera.openCameraDevice();
+
+        cameraPipeline = new CameraPipeline();
+        phoneCamera.setPipeline(cameraPipeline);
+
+
+        phoneCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
+
+         */
 
     }
 
@@ -84,9 +135,10 @@ public class HowlersDrive extends OpMode
      */
     @Override
     public void start() {
+
+
         runtime.reset();
-        //CommandScheduler.getInstance().schedule(basicDrive);
-        //CommandScheduler.getInstance().schedule(manualTurretController);
+
     }
 
 
@@ -95,11 +147,8 @@ public class HowlersDrive extends OpMode
      */
     @Override
     public void loop() {
-        //CommandScheduler.getInstance().run();
-        //robot.flywheel.set(100);
-        robot.flywheel.set(1);
-        //PIDControlTurret(robot.turret);
 
+        dashboard.sendTelemetryPacket(packet);
     }
 
     /*
@@ -108,12 +157,6 @@ public class HowlersDrive extends OpMode
     @Override
     public void stop() {
         robot.turret.stop();
-    }
-
-
-    private void PIDControlTurret(Turret turret) {
-        //if(_turretPID.atSetPoint()){ turret.setSpeed(1); return;}
-        turret.setSpeed(_turretPID.calculate(turret.getCurrentTicks(), _setPoint));
     }
 
 

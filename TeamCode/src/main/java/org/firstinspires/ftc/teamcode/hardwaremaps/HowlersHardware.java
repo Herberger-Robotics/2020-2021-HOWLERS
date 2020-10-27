@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.hardwaremaps;
 
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.arcrobotics.ftclib.hardware.motors.SimpleMotor;
-import com.arcrobotics.ftclib.hardware.motors.SimpleMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 

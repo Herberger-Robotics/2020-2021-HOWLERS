@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
-import com.arcrobotics.ftclib.hardware.motors.SimpleMotor;
-import com.arcrobotics.ftclib.hardware.motors.SimpleMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
