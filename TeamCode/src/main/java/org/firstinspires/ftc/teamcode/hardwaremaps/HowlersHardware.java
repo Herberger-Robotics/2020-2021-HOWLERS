@@ -33,12 +33,15 @@ public class HowlersHardware {
 
     }
 
-    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret, boolean initIntake) {
+    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret, boolean initIntake, boolean randomTesting) {
         hwMap = ahwMap;
 
         if(initDrivetrain) { driveTrain = new DriveTrain(hwMap, this); rightBack.setInverted(true); leftBack.setInverted(true); }
         if(initTurret) turret = new Turret(hwMap, this);
-
+        if(randomTesting) {
+             robot.rightFront = new HowlersMotor(hwMap, "one", 134.4);
+                robot.rightBack = new HowlersMotor(hwMap, "two", 134.4);
+        }
     }
 
 }
