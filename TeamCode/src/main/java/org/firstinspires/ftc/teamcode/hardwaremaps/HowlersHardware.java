@@ -13,6 +13,8 @@ import java.lang.reflect.Array;
 import java.util.List;
 
 public class HowlersHardware {
+    // static variable single_instance of type Singleton
+    private static HowlersHardware instance = null;
 
     public HowlersMotor rightFront = null;
     public HowlersMotor rightBack = null;
@@ -22,26 +24,41 @@ public class HowlersHardware {
 
     public HowlersMotor flywheel = null;
 
+    public HowlersMotor intake = null;
+
     public Turret turret = null;
     public DriveTrain driveTrain = null;
-
 
     HardwareMap hwMap =  null;
     private ElapsedTime period  = new ElapsedTime();
 
-    public HowlersHardware(){
+    // private constructor restricted to this class itself
+    private HowlersHardware() {
 
     }
 
-    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret, boolean initIntake, boolean randomTesting) {
+    // static method to create instance of Singleton class
+    public static HowlersHardware getInstance() {
+        if (instance == null)
+            instance = new HowlersHardware();
+
+        return instance;
+    }
+
+    public static void yeetTheInstance() {
+        instance = null;
+    }
+
+    public static HowlersHardware resetInstance() {
+        instance = new HowlersHardware();
+        return instance;
+    }
+
+    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret, boolean initIntake) {
         hwMap = ahwMap;
 
-        if(initDrivetrain) { driveTrain = new DriveTrain(hwMap, this); rightBack.setInverted(true); leftBack.setInverted(true); }
-        if(initTurret) turret = new Turret(hwMap, this);
-        if(randomTesting) {
-             robot.rightFront = new HowlersMotor(hwMap, "one", 134.4);
-                robot.rightBack = new HowlersMotor(hwMap, "two", 134.4);
-        }
+        if(initDrivetrain) { driveTrain = new DriveTrain(hwMap); rightBack.setInverted(true); leftBack.setInverted(true); }
+        if(initTurret) turret = new Turret(hwMap);
+        if(initIntake) intake = new HowlersMotor(hwMap, "intakeMotor", 134.4);
     }
-
 }

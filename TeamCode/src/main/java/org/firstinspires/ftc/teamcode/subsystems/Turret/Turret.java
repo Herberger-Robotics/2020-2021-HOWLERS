@@ -9,20 +9,10 @@ import org.firstinspires.ftc.teamcode.hardwaremaps.motors.HowlersMotor;
 
 public class Turret {
 
-    public enum FlywheelState {
-        OFF,
-        SPINNING_UP_MIN,
-        SPINNING_UP_MAX,
-        SPINNING_DOWN,
-        MIN,
-        MAX
-    }
-
-    public FlywheelState flywheelState;
-
     private HowlersMotor m_flywheel;
 
-    public Turret(final HardwareMap hwMap, HowlersHardware robot) {
+    public Turret(final HardwareMap hwMap) {
+        HowlersHardware robot = HowlersHardware.getInstance();
         robot.flywheel = new HowlersMotor(hwMap, "flywheel", 145.6);
         robot.flywheel.setInverted(true);
         m_flywheel = robot.flywheel;
@@ -34,10 +24,6 @@ public class Turret {
 
     public void stop() {
         m_flywheel.stopMotor();
-    }
-
-    public void setState(FlywheelState state) {
-        flywheelState = state;
     }
 
     public double getCurrentTicks() {

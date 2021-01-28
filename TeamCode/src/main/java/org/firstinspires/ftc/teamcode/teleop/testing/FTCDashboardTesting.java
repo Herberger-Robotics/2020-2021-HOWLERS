@@ -54,7 +54,7 @@ public class FTCDashboardTesting extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    HowlersHardware robot = new HowlersHardware();
+    HowlersHardware robot;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -82,6 +82,7 @@ public class FTCDashboardTesting extends OpMode
      */
     @Override
     public void init() {
+        robot = HowlersHardware.resetInstance();
         robot.init(hardwareMap, false, false, false);
 
 

@@ -1,18 +1,75 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.teleop.Auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
 
+import java.util.ArrayList;
+
 public abstract class HowlersAutoFunction extends LinearOpMode {
-    HowlersHardware robot = new HowlersHardware();
+    HowlersHardware robot;
+
+    public enum Direction {
+        FORWARD,
+        LEFT,
+        RIGHT,
+        BACKWARD,
+    }
 
     public void initRobot(){
-        //robot.init(hardwareMap);
-        //telemetry.addLine("Initialized");
-        //stopAndReset();
+        robot = robot.getInstance();
+        robot.init(hardwareMap, true, true, true);
+        telemetry.addLine("Initialized");
+        stopAndReset();
 
+
+    }
+
+    public void drive(Direction direction, double rotations) {
+
+        switch(direction) {
+            case FORWARD:
+                standardDrive(1, rotations);
+                break;
+            case LEFT:
+                strafeDrive(1, rotations * -1, 1);
+                break;
+            case RIGHT:
+                strafeDrive(1,rotations, rotations * -1);
+                break;
+            case BACKWARD:
+                standardDrive(1, rotations * -1);
+                break;
+        }
+
+    }
+
+    public void goToRelativePosition(double X, double Y) {
+        Direction XDirection;
+        Direction YDirection;
+        switch((int)Math.signum(X)) {
+            case -1:
+                XDirection = Direction.BACKWARD;
+                break;
+            case 1:
+                XDirection = Direction.FORWARD;
+                break;
+        }
+        switch((int)Math.signum(Y)) {
+            case -1:
+                YDirection = Direction.LEFT;
+                break;
+            case 1:
+                YDirection = Direction.RIGHT;
+        }
+    }
+
+    public void strafeDrive(double speed, double rightRotations, double leftRotations) {
+
+    }
+
+    public void standardDrive(double speed, double rotations) {
 
     }
 
@@ -83,12 +140,5 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
 
 
     }
-
-
-
-
-
-
-
 
 }

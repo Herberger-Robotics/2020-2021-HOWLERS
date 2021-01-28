@@ -52,7 +52,7 @@ public class DriveTrainTesting extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    HowlersHardware robot = new HowlersHardware();
+    HowlersHardware robot;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -71,6 +71,7 @@ public class DriveTrainTesting extends OpMode
      */
     @Override
     public void init() {
+        robot = HowlersHardware.resetInstance();
         robot.init(hardwareMap, true, false, false);
 
 

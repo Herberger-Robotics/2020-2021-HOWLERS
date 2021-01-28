@@ -14,8 +14,8 @@ public class DriveTrain {
     private final MecanumDrive driveTrain;
 
 
-    public DriveTrain(final HardwareMap hwMap, HowlersHardware robot) {
-
+    public DriveTrain(final HardwareMap hwMap) {
+        HowlersHardware robot = HowlersHardware.getInstance();
         robot.rightFront = new HowlersMotor(hwMap, "rightFront", 134.4);
         robot.rightBack = new HowlersMotor(hwMap, "rightBack", 134.4);
         robot.leftBack = new HowlersMotor(hwMap, "leftBack", 134.4);
@@ -30,6 +30,8 @@ public class DriveTrain {
         //drives based off of the robots orientation
         driveTrain.driveRobotCentric(strafeSpeed, forwardSpeed, rotationSpeed);
     }
+
+
 
     public void stop() {
         driveTrain.stop();

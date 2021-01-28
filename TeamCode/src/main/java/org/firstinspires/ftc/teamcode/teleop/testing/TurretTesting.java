@@ -53,7 +53,7 @@ public class TurretTesting extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    HowlersHardware robot = new HowlersHardware();
+    HowlersHardware robot;
 
     //BasicDrive basicDrive;
     //ManualTurretController manualTurretController;
@@ -67,6 +67,8 @@ public class TurretTesting extends OpMode
     TelemetryPacket packet = new TelemetryPacket();
 
     double currentVelocity = 0;
+
+    double setPoint = 0;
 
 
     @Config
@@ -88,12 +90,10 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void init() {
-        robot.init(hardwareMap, false, true, false);
+        robot = HowlersHardware.resetInstance();
+        robot.init(hardwareMap, false, true, true);
         robot.flywheel.setInverted(RobotConstants.invertFlywheel);
         _turretPID = new PIDFController(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
-
-        //basicDrive = new BasicDrive(robot.driveTrain, driverOp);
-        //manualTurretController = new ManualTurretController(robot.turret, toolOp);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -113,7 +113,7 @@ public class TurretTesting extends OpMode
     @Override
     public void start() {
         runtime.reset();
-        _turretPID.setSetPoint(RobotConstants.flywheelSETPOINT);
+        _turretPID.setSetPoint(setPoint);
         _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
         //_turretPID.control(robot.flywheel);
         //CommandScheduler.getInstance().schedule(basicDrive);
@@ -127,9 +127,17 @@ public class TurretTesting extends OpMode
     @Override
     public void loop() {
 
+        intakeController();
+
+        if(driverOp.gamepad.a) {
+            setPoint = 1000;
+        } else if(driverOp.gamepad.b) {
+            setPoint = 0;
+        }
+
         currentVelocity = robot.flywheel.getVelocity();
 
-        _turretPID.setSetPoint(RobotConstants.flywheelSETPOINT);
+        _turretPID.setSetPoint(setPoint);
         _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
         _turretPID.setPIDF(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
 
@@ -145,7 +153,7 @@ public class TurretTesting extends OpMode
         packet.put("flywheelSetSpeed", robot.flywheel.get());
         packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.getVelocity()));
         packet.put("PIDPositionError", _turretPID.getPositionError());
-        packet.put("Current Velocity", currentVelocity);
+        packet.put("Current Velocity", robot.flywheel.getVelocity());
 
         dashboard.sendTelemetryPacket(packet);
     }
@@ -156,6 +164,13 @@ public class TurretTesting extends OpMode
     @Override
     public void stop() {
         robot.turret.stop();
+    }
+
+    public void intakeController() {
+        while(driverOp.gamepad.x) {
+            robot.intake.set(0.25);
+        }
+        robot.intake.set(0);
     }
 
 

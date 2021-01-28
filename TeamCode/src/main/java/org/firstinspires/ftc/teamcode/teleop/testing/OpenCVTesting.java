@@ -55,7 +55,7 @@ public class OpenCVTesting extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    HowlersHardware robot = new HowlersHardware();
+    HowlersHardware robot;
 
     //BasicDrive basicDrive;
     //ManualTurretController manualTurretController;
@@ -95,6 +95,7 @@ public class OpenCVTesting extends OpMode
      */
     @Override
     public void init() {
+        robot = HowlersHardware.resetInstance();
         robot.init(hardwareMap, false, false, false);
         //ringDetector = new UGContourRingDetector(hardwareMap, telemetry, true);
         //FtcDashboard.getInstance().startCameraStream(, 0);
