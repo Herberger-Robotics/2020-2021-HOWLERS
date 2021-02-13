@@ -96,7 +96,7 @@ public class OpenCVTesting extends OpMode
     @Override
     public void init() {
         robot = HowlersHardware.resetInstance();
-        robot.init(hardwareMap, false, false, false);
+        robot.init(hardwareMap, false, false, false, false);
         //ringDetector = new UGContourRingDetector(hardwareMap, telemetry, true);
         //FtcDashboard.getInstance().startCameraStream(, 0);
 

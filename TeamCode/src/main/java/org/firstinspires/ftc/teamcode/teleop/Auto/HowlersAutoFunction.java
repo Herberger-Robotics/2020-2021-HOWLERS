@@ -19,7 +19,8 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
 
     public void initRobot(){
         robot = robot.getInstance();
-        robot.init(hardwareMap, true, true, true);
+        robot.init(hardwareMap, true, true, true, true);
+        robot.wobbleGoal.runUsingEncoder();
         telemetry.addLine("Initialized");
         stopAndReset();
 
@@ -30,7 +31,7 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
 
         switch(direction) {
             case FORWARD:
-                standardDrive(1, rotations);
+                encoderDrive(1, rotations * 1, rotations * -1);
                 break;
             case LEFT:
                 strafeDrive(1, rotations * -1, 1);
@@ -39,7 +40,7 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
                 strafeDrive(1,rotations, rotations * -1);
                 break;
             case BACKWARD:
-                standardDrive(1, rotations * -1);
+                encoderDrive(1, rotations * -1, rotations * -1);
                 break;
         }
 
@@ -93,8 +94,6 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
 
     public void encoderDrive(double speed, double rightRotations, double leftRotations){
 
-        robot.init(hardwareMap, true, false, false);
-
         int backrightTarget;
         int backleftTarget;
         int frontrightTarget;
@@ -139,6 +138,66 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
 
 
 
+    }
+
+    public void pickUpWobble() {
+        int wobbleTarget;
+
+        if(opModeIsActive()) {
+            wobbleTarget = robot.wobbleGoal.getEncoderCount() - (int)((0.1) * (1497.325));
+
+            robot.wobbleGoal.setTarget(wobbleTarget);
+
+            robot.wobbleGoal.runToPosition();
+
+            robot.wobbleGoal.set(Math.abs(0.1));
+
+            while(opModeIsActive() && robot.wobbleGoal.busy()) {
+
+            }
+
+            robot.wobbleGoal.set(0);
+
+            robot.wobbleGoal.runUsingEncoder();
+        }
+    }
+
+    public void dropWobble() {
+        int wobbleTarget;
+
+        if(opModeIsActive()) {
+            wobbleTarget = robot.wobbleGoal.getEncoderCount() - (int)((-0.1) * (1497.325));
+
+            robot.wobbleGoal.setTarget(wobbleTarget);
+
+            robot.wobbleGoal.runToPosition();
+
+            robot.wobbleGoal.set(Math.abs(0.1));
+
+            while(opModeIsActive() && robot.wobbleGoal.busy()) {
+
+            }
+
+            robot.wobbleGoal.set(0);
+
+            robot.wobbleGoal.runUsingEncoder();
+        }
+    }
+
+    public void wobbleToPositionA() {
+        drive(Direction.FORWARD, 1);
+        //dropWobble();
+        //drive(Direction.BACKWARD, 1);
+    }
+    public void wobbleToPositionB() {
+        drive(Direction.FORWARD, 3);
+        //dropWobble();
+        //drive(Direction.BACKWARD, 3);
+    }
+    public void wobbleToPositionC() {
+        drive(Direction.FORWARD, 5);
+        //dropWobble();
+        //drive(Direction.BACKWARD, 5);
     }
 
 }

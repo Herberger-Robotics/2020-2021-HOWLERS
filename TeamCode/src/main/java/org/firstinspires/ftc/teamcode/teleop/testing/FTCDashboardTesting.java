@@ -83,7 +83,7 @@ public class FTCDashboardTesting extends OpMode
     @Override
     public void init() {
         robot = HowlersHardware.resetInstance();
-        robot.init(hardwareMap, false, false, false);
+        robot.init(hardwareMap, false, false, false, false);
 
 
         // Tell the driver that initialization is complete.
@@ -97,6 +97,7 @@ public class FTCDashboardTesting extends OpMode
      */
     @Override
     public void init_loop() {
+
     }
 
     /*

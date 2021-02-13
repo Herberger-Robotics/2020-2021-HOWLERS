@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardwaremaps.motors.HowlersMotor;
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain.DriveTrain;
+import org.firstinspires.ftc.teamcode.subsystems.Intake.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
 
 import java.lang.reflect.Array;
@@ -24,10 +25,13 @@ public class HowlersHardware {
 
     public HowlersMotor flywheel = null;
 
-    public HowlersMotor intake = null;
+    public HowlersMotor intakeMotor = null;
+
+    public HowlersMotor wobbleGoal = null;
 
     public Turret turret = null;
     public DriveTrain driveTrain = null;
+    public Intake intake = null;
 
     HardwareMap hwMap =  null;
     private ElapsedTime period  = new ElapsedTime();
@@ -54,11 +58,13 @@ public class HowlersHardware {
         return instance;
     }
 
-    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret, boolean initIntake) {
+    public void init(HardwareMap ahwMap, boolean initDrivetrain, boolean initTurret, boolean initIntake, boolean initWobbleGoal) {
         hwMap = ahwMap;
 
         if(initDrivetrain) { driveTrain = new DriveTrain(hwMap); rightBack.setInverted(true); leftBack.setInverted(true); }
         if(initTurret) turret = new Turret(hwMap);
-        if(initIntake) intake = new HowlersMotor(hwMap, "intakeMotor", 134.4);
+        if(initIntake) intake = new Intake(hwMap);
+        if(initWobbleGoal) wobbleGoal = new HowlersMotor(hwMap, "wobbleMotor", 134.4);
+
     }
 }

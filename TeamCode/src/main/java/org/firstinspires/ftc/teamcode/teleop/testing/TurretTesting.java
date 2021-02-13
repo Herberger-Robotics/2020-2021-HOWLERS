@@ -91,7 +91,7 @@ public class TurretTesting extends OpMode
     @Override
     public void init() {
         robot = HowlersHardware.resetInstance();
-        robot.init(hardwareMap, false, true, true);
+        robot.init(hardwareMap, false, true, true, false);
         robot.flywheel.setInverted(RobotConstants.invertFlywheel);
         _turretPID = new PIDFController(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
 
@@ -168,9 +168,9 @@ public class TurretTesting extends OpMode
 
     public void intakeController() {
         while(driverOp.gamepad.x) {
-            robot.intake.set(0.25);
+            robot.intakeMotor.set(0.25);
         }
-        robot.intake.set(0);
+        robot.intakeMotor.set(0);
     }
 
 

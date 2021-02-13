@@ -8,10 +8,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
 import org.firstinspires.ftc.teamcode.hardwaremaps.motors.HowlersMotor;
+import org.firstinspires.ftc.teamcode.subsystems.subsystem;
 
-public class DriveTrain {
+public class DriveTrain extends subsystem {
 
     private final MecanumDrive driveTrain;
+    public boolean busy;
 
 
     public DriveTrain(final HardwareMap hwMap) {

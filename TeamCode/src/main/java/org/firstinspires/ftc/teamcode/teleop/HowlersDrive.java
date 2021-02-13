@@ -67,7 +67,7 @@ public class HowlersDrive extends OpMode
 
     @Config
     public static class RobotConstants {
-        public static double flywheelP = 10;
+        public static double flywheelP = 5;
         public static double flywheelI = 0;
         public static double flywheelD = 0;
         public static double flywheelF = 0;
@@ -85,7 +85,7 @@ public class HowlersDrive extends OpMode
     public void init() {
         robot = robot.resetInstance();
 
-        robot.init(hardwareMap, true, true, true);
+        robot.init(hardwareMap, true, true, true, true);
 
         //Gamepad Initialization
         driverOp = new GamepadEx(gamepad1);
@@ -129,6 +129,7 @@ public class HowlersDrive extends OpMode
         driveTrainController();
         flywheelController();
         intakeController();
+        wobbleController();
 
         packet.put("flywheelSetSpeed", robot.flywheel.get());
         packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.getVelocity()));
@@ -178,11 +179,21 @@ public class HowlersDrive extends OpMode
 
     public void intakeController() {
         if (driverOp.gamepad.x) {
-            robot.intake.set(-1);
+            robot.intakeMotor.set(-1);
         } else if(driverOp.gamepad.y) {
-            robot.intake.set(1);
+            robot.intakeMotor.set(1);
         } else {
-            robot.intake.set(0);
+            robot.intakeMotor.set(0);
+        }
+    }
+
+    public void wobbleController() {
+        if (toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
+            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER));
+        } else if(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.2) {
+            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * -1 );
+        } else {
+            robot.wobbleGoal.set(0);
         }
     }
 
@@ -193,7 +204,8 @@ public class HowlersDrive extends OpMode
     public void stop() {
         robot.turret.stop();
         robot.driveTrain.stop();
-        robot.intake.set(0);
+        robot.intake.stop();
+        robot.wobbleGoal.set(0);
     }
 
 

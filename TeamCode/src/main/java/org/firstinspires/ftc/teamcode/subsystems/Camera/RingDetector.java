@@ -21,6 +21,8 @@ public class RingDetector {
         phoneCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
     }
 
+
+
     public UGContourRingPipeline.Height getHeight() {
         return pipeline.getHeight();
     }

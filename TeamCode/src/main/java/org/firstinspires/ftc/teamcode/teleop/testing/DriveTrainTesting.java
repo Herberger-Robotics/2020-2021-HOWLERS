@@ -72,7 +72,7 @@ public class DriveTrainTesting extends OpMode
     @Override
     public void init() {
         robot = HowlersHardware.resetInstance();
-        robot.init(hardwareMap, true, false, false);
+        robot.init(hardwareMap, true, false, false, false);
 
 
         // Tell the driver that initialization is complete.
