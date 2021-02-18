@@ -8,13 +8,22 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
 import org.firstinspires.ftc.teamcode.hardwaremaps.motors.HowlersMotor;
-import org.firstinspires.ftc.teamcode.subsystems.subsystem;
+import org.firstinspires.ftc.teamcode.subsystems.Subsystem;
 
-public class DriveTrain extends subsystem {
+public class DriveTrain extends Subsystem {
 
     private final MecanumDrive driveTrain;
-    public boolean busy;
 
+    private double speed = 1;
+
+    public double setSpeed(double setter) {
+        speed = setter;
+        return speed;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
 
     public DriveTrain(final HardwareMap hwMap) {
         HowlersHardware robot = HowlersHardware.getInstance();
@@ -31,6 +40,22 @@ public class DriveTrain extends subsystem {
 
         //drives based off of the robots orientation
         driveTrain.driveRobotCentric(strafeSpeed, forwardSpeed, rotationSpeed);
+    }
+
+    public void setInverted(boolean inverted) {
+        HowlersHardware robot = HowlersHardware.getInstance();
+        robot.rightBack.setInverted(inverted);
+        robot.rightFront.setInverted(inverted);
+        robot.leftBack.setInverted(inverted);
+        robot.leftFront.setInverted(inverted);
+    }
+
+    public boolean isBusy() {
+        HowlersHardware robot = HowlersHardware.getInstance();
+        boolean isBusy;
+        if(robot.rightFront.busy() && robot.leftBack.busy() && robot.rightBack.busy() && robot.leftFront.busy()) isBusy = true;
+        else isBusy = false;
+        return isBusy;
     }
 
 

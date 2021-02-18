@@ -56,6 +56,10 @@ public class HowlersMotor extends Motor {
         set(0);
     }
 
+    public void setDCZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
+        m_motor.setZeroPowerBehavior(behavior);
+    }
+
     public int getEncoderCount() {
         return (int) (m_motor.getCurrentPosition() - resetVal);
     }
@@ -78,12 +82,6 @@ public class HowlersMotor extends Motor {
 
     public void runWithoutEncoder(){m_motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);}
 
-    public double calculateRPM(){
-        double count = this.getEncoderCount() / 145.6;
-        double currentRPM = count / 3000;
-        this.resetEncoder();
-        return currentRPM;
-    }
 
     public double getVelocity() {
         return m_motor.getVelocity();

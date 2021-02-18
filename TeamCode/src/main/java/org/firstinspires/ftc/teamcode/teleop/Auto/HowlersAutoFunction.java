@@ -28,19 +28,19 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
     }
 
     public void drive(Direction direction, double rotations) {
-
+        double speed = robot.driveTrain.getSpeed();
         switch(direction) {
             case FORWARD:
-                encoderDrive(1, rotations * 1, rotations * -1);
+                encoderDrive(speed, rotations * 1, rotations * -1);
                 break;
             case LEFT:
-                strafeDrive(1, rotations * -1, 1);
+                strafeDrive(speed, rotations * -1, 1);
                 break;
             case RIGHT:
-                strafeDrive(1,rotations, rotations * -1);
+                strafeDrive(speed,rotations, rotations * -1);
                 break;
             case BACKWARD:
-                encoderDrive(1, rotations * -1, rotations * -1);
+                encoderDrive(speed, rotations * -1, rotations * 1);
                 break;
         }
 
@@ -67,6 +67,55 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
     }
 
     public void strafeDrive(double speed, double rightRotations, double leftRotations) {
+
+        int backrightTarget;
+        int backleftTarget;
+        int frontrightTarget;
+        int frontleftTarget;
+
+        if(opModeIsActive()){
+
+            robot.rightFront.setInverted(false);
+            robot.leftBack.setInverted(false);
+
+            frontrightTarget = robot.rightFront.getEncoderCount() - (int)((rightRotations) * (1497.325));
+            frontleftTarget = robot.leftFront.getEncoderCount() - (int)((leftRotations) * (1497.325));
+            backleftTarget = robot.leftBack.getEncoderCount() - (int)((leftRotations) * (1497.325));
+            backrightTarget = robot.rightBack.getEncoderCount() - (int)((rightRotations) * (1497.325));
+
+            robot.rightFront.setTarget(frontrightTarget);
+            robot.leftFront.setTarget(frontleftTarget);
+            robot.rightBack.setTarget(backrightTarget);
+            robot.leftBack.setTarget(backleftTarget);
+
+            robot.rightBack.runToPosition();
+            robot.rightFront.runToPosition();
+            robot.leftBack.runToPosition();
+            robot.leftFront.runToPosition();
+
+            robot.rightFront.set(Math.abs(speed));
+            robot.rightBack.set(Math.abs(speed));
+            robot.leftFront.set(Math.abs(speed));
+            robot.leftBack.set(Math.abs(speed));
+
+            while (opModeIsActive() && robot.leftBack.busy() && robot.leftFront.busy() && robot.rightBack.busy() && robot.rightFront.busy() )
+            {
+
+            }
+
+            robot.rightBack.set(0);
+            robot.rightFront.set(0);
+            robot.leftFront.set(0);
+            robot.leftBack.set(0);
+
+            robot.rightFront.setInverted(true);
+            robot.leftBack.setInverted(true);
+
+            robot.leftFront.runUsingEncoder();
+            robot.leftBack.runUsingEncoder();
+            robot.rightBack.runUsingEncoder();
+            robot.rightFront.runUsingEncoder();
+        }
 
     }
 
@@ -185,19 +234,72 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
     }
 
     public void wobbleToPositionA() {
+        drive(Direction.LEFT, 0.2);
         drive(Direction.FORWARD, 1);
         //dropWobble();
-        //drive(Direction.BACKWARD, 1);
+        drive(Direction.BACKWARD, 1);
     }
     public void wobbleToPositionB() {
-        drive(Direction.FORWARD, 3);
+        drive(Direction.LEFT, 0.2);
+        drive(Direction.FORWARD, 2);
+        drive(Direction.RIGHT,0.7);
         //dropWobble();
-        //drive(Direction.BACKWARD, 3);
+        drive(Direction.BACKWARD, 1);
     }
     public void wobbleToPositionC() {
-        drive(Direction.FORWARD, 5);
+        drive(Direction.LEFT, 0.2);
+        drive(Direction.FORWARD, 3);
         //dropWobble();
-        //drive(Direction.BACKWARD, 5);
+        drive(Direction.BACKWARD, 1);
+    }
+
+    public void controlFlywheel(double setPoint) {
+        robot.turret.turretPID.setSetPoint(setPoint);
+        robot.flywheel.setVelocity(robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
+
+    }
+
+    public void feed() {
+        int feederTarget;
+
+        if(opModeIsActive()) {
+            feederTarget = robot.feederMotor.getEncoderCount() - (int)((1) * (1497.325));
+
+            robot.feederMotor.setTarget(feederTarget);
+
+            robot.feederMotor.runToPosition();
+
+            robot.feederMotor.set(Math.abs(1));
+
+            while(opModeIsActive() && robot.feederMotor.busy()) {
+
+            }
+
+            robot.feederMotor.set(0);
+
+            robot.feederMotor.runUsingEncoder();
+        }
+    }
+    public void intake() {
+        int intakeTarget;
+
+        if(opModeIsActive()) {
+            intakeTarget = robot.intakeMotor.getEncoderCount() - (int)((5) * (1497.325));
+
+            robot.intakeMotor.setTarget(intakeTarget);
+
+            robot.intakeMotor.runToPosition();
+
+            robot.intakeMotor.set(Math.abs(1));
+
+            while(opModeIsActive() && robot.intakeMotor.busy()) {
+
+            }
+
+            robot.intakeMotor.set(0);
+
+            robot.intakeMotor.runUsingEncoder();
+        }
     }
 
 }

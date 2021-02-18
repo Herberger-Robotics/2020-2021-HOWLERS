@@ -58,17 +58,14 @@ public class TurretTesting extends OpMode
     //BasicDrive basicDrive;
     //ManualTurretController manualTurretController;
 
-    GamepadEx driverOp = new GamepadEx(gamepad1);
-    GamepadEx toolOp = new GamepadEx(gamepad2);
+    GamepadEx driverOp;
+    GamepadEx toolOp;
 
-    private PIDFController _turretPID;
+    double currentVelocity = 0;
+    double setPoint = 0;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
-
-    double currentVelocity = 0;
-
-    double setPoint = 0;
 
 
     @Config
@@ -91,9 +88,13 @@ public class TurretTesting extends OpMode
     @Override
     public void init() {
         robot = HowlersHardware.resetInstance();
+
         robot.init(hardwareMap, false, true, true, false);
+
         robot.flywheel.setInverted(RobotConstants.invertFlywheel);
-        _turretPID = new PIDFController(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
+
+        driverOp = new GamepadEx(gamepad1);
+        toolOp = new GamepadEx(gamepad2);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -113,8 +114,8 @@ public class TurretTesting extends OpMode
     @Override
     public void start() {
         runtime.reset();
-        _turretPID.setSetPoint(setPoint);
-        _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
+        robot.turret.turretPID.setSetPoint(setPoint);
+        robot.turret.turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
         //_turretPID.control(robot.flywheel);
         //CommandScheduler.getInstance().schedule(basicDrive);
         //CommandScheduler.getInstance().schedule(manualTurretController);
@@ -126,34 +127,34 @@ public class TurretTesting extends OpMode
      */
     @Override
     public void loop() {
-
-        intakeController();
+        robot.feederMotor.set(-1);
 
         if(driverOp.gamepad.a) {
-            setPoint = 1000;
+            setPoint = RobotConstants.flywheelSETPOINT;
         } else if(driverOp.gamepad.b) {
             setPoint = 0;
         }
 
         currentVelocity = robot.flywheel.getVelocity();
 
-        _turretPID.setSetPoint(setPoint);
-        _turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
-        _turretPID.setPIDF(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
+        robot.turret.turretPID.setSetPoint(setPoint);
+        robot.turret.turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
+        robot.turret.turretPID.setPIDF(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
 
         //robot.flywheel.set(1);
         if(RobotConstants.SPEED_OVERRIDE > 0) {
             robot.flywheel.set(RobotConstants.SPEED_OVERRIDE);
         } else {
                 //robot.flywheel.set(1);
-                robot.flywheel.setVelocity(_turretPID.calculate(robot.flywheel.getVelocity()));
+                robot.flywheel.setVelocity(robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
 
         }
 
         packet.put("flywheelSetSpeed", robot.flywheel.get());
-        packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.getVelocity()));
-        packet.put("PIDPositionError", _turretPID.getPositionError());
+        packet.put("PIDCalculation", robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
+        packet.put("PIDPositionError", robot.turret.turretPID.getPositionError());
         packet.put("Current Velocity", robot.flywheel.getVelocity());
+        packet.put("Set Point", setPoint);
 
         dashboard.sendTelemetryPacket(packet);
     }
@@ -164,13 +165,7 @@ public class TurretTesting extends OpMode
     @Override
     public void stop() {
         robot.turret.stop();
-    }
-
-    public void intakeController() {
-        while(driverOp.gamepad.x) {
-            robot.intakeMotor.set(0.25);
-        }
-        robot.intakeMotor.set(0);
+        robot.feederMotor.set(0);
     }
 
 

@@ -1,20 +1,29 @@
 package org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
 import org.firstinspires.ftc.teamcode.hardwaremaps.motors.HowlersMotor;
+import org.firstinspires.ftc.teamcode.subsystems.Subsystem;
+import org.firstinspires.ftc.teamcode.teleop.HowlersDrive;
 
-public class Turret {
+public class Turret extends Subsystem {
 
     private HowlersMotor m_flywheel;
+    public PIDFController turretPID;
 
     public Turret(final HardwareMap hwMap) {
         HowlersHardware robot = HowlersHardware.getInstance();
-        robot.flywheel = new HowlersMotor(hwMap, "flywheel", 145.6);
+
+        robot.flywheel = new HowlersMotor(hwMap, "flywheel", 28);
         robot.flywheel.setInverted(true);
+
+        turretPID = new PIDFController(HowlersHardware.RobotConstants.flywheelP , HowlersHardware.RobotConstants.flywheelI  , HowlersHardware.RobotConstants.flywheelD, HowlersHardware.RobotConstants.flywheelF);
+        turretPID.setTolerance(HowlersHardware.RobotConstants.flywheelTOLERANCE);
+
         m_flywheel = robot.flywheel;
     }
 

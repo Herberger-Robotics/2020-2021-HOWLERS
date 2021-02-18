@@ -36,14 +36,14 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
 import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
-import org.firstinspires.ftc.teamcode.teleop.testing.TurretTesting;
-
 
 @TeleOp(name="HowlersDrive", group="Iterative Opmode")
 
@@ -59,24 +59,11 @@ public class HowlersDrive extends OpMode
     GamepadEx driverOp = null;
     GamepadEx toolOp = null;
 
-    private PIDFController _turretPID;
-    private double _setpoint;
+    double currentVelocity = 0;
+    double setPoint = 0;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
-
-    @Config
-    public static class RobotConstants {
-        public static double flywheelP = 5;
-        public static double flywheelI = 0;
-        public static double flywheelD = 0;
-        public static double flywheelF = 0;
-        public static double SPEED_OVERRIDE = 0;
-        public static double flywheelSETPOINT = 0;
-        public static double flywheelTOLERANCE = 0.01;
-        public static boolean invertFlywheel = true;
-    }
-
 
         /*
      * Code to run ONCE when the driver hits INIT
@@ -93,9 +80,11 @@ public class HowlersDrive extends OpMode
 
 
         //Turret Initialization
-        robot.flywheel.setInverted(TurretTesting.RobotConstants.invertFlywheel);
-        _turretPID = new PIDFController(TurretTesting.RobotConstants.flywheelP , TurretTesting.RobotConstants.flywheelI  , TurretTesting.RobotConstants.flywheelD, TurretTesting.RobotConstants.flywheelF);
-        _setpoint = RobotConstants.flywheelSETPOINT;
+        robot.flywheel.setInverted(HowlersHardware.RobotConstants.invertFlywheel);
+
+
+        //Wobble Initialization
+        robot.wobbleGoal.setDCZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -131,41 +120,42 @@ public class HowlersDrive extends OpMode
         intakeController();
         wobbleController();
 
-        packet.put("flywheelSetSpeed", robot.flywheel.get());
-        packet.put("PIDCalculation", _turretPID.calculate(robot.flywheel.getVelocity()));
-        packet.put("PIDPositionError", _turretPID.getPositionError());
         packet.put("Current Velocity", robot.flywheel.getVelocity());
+        packet.put("Set Point", setPoint);
 
         dashboard.sendTelemetryPacket(packet);
     }
 
     public void flywheelController() {
+        currentVelocity = robot.flywheel.getVelocity();
 
-        if(driverOp.gamepad.a) {
-            _setpoint = 1000;
-        } else if(driverOp.gamepad.b) {
-            _setpoint = 0;
+        robot.turret.turretPID.setSetPoint(setPoint);
+
+        if(driverOp.getButton(GamepadKeys.Button.DPAD_UP)) {
+            setPoint = 900;
+        } else if(driverOp.getButton(GamepadKeys.Button.DPAD_RIGHT)) {
+            setPoint = 830;
+        } else if(driverOp.getButton(GamepadKeys.Button.DPAD_DOWN)) {
+            setPoint = 750;
+        } else if(driverOp.getButton(GamepadKeys.Button.DPAD_LEFT)) {
+            setPoint = 0;
         }
 
-        _turretPID.setSetPoint(_setpoint);
-        _turretPID.setTolerance(TurretTesting.RobotConstants.flywheelTOLERANCE);
-        _turretPID.setPIDF(TurretTesting.RobotConstants.flywheelP , TurretTesting.RobotConstants.flywheelI  , TurretTesting.RobotConstants.flywheelD, TurretTesting.RobotConstants.flywheelF);
-
-        //robot.flywheel.set(1);
-        if(TurretTesting.RobotConstants.SPEED_OVERRIDE > 0) {
-            robot.flywheel.set(TurretTesting.RobotConstants.SPEED_OVERRIDE);
-        } else {
-            //robot.flywheel.set(1);
-            robot.flywheel.setVelocity(_turretPID.calculate(robot.flywheel.getVelocity()));
-
-        }
+        robot.flywheel.setVelocity(robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
     }
 
     public void driveTrainController() {
-        double speed = 0.5;
+        double speed;
+        double strafe = 0;
+
+        if(driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
+            speed = 0.25;
+        } else {
+            speed = 0.75;
+        }
+
         double rotation = driverOp.getLeftX() * speed;
         double forward = driverOp.getLeftY() * speed;
-        double strafe = 0;
 
         boolean leftBumperState = driverOp.getButton(GamepadKeys.Button.LEFT_BUMPER);
         boolean rightBumperState = driverOp.getButton(GamepadKeys.Button.RIGHT_BUMPER);
@@ -178,23 +168,31 @@ public class HowlersDrive extends OpMode
     }
 
     public void intakeController() {
-        if (driverOp.gamepad.x) {
+        if (driverOp.gamepad.a) {
             robot.intakeMotor.set(-1);
-        } else if(driverOp.gamepad.y) {
+        } else if(driverOp.gamepad.b) {
             robot.intakeMotor.set(1);
         } else {
             robot.intakeMotor.set(0);
+        }
+        if(driverOp.gamepad.y) {
+            robot.feederMotor.set(1);
+        } else if(driverOp.gamepad.x) {
+            robot.feederMotor.set(-1);
+        } else {
+            robot.feederMotor.set(0);
         }
     }
 
     public void wobbleController() {
         if (toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
-            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER));
+            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) * 0.4);
         } else if(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.2) {
-            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * -1 );
+            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * -0.4 );
         } else {
             robot.wobbleGoal.set(0);
         }
+        telemetry.addData("Wobble Power", robot.wobbleGoal.get());
     }
 
     /*
