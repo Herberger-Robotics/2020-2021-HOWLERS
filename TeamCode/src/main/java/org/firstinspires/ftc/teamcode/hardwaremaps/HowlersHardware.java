@@ -59,6 +59,7 @@ public class HowlersHardware {
         public static double flywheelSETPOINT = 0;
         public static double flywheelTOLERANCE = 0.01;
         public static boolean invertFlywheel = true;
+        public static boolean displayPID = false;
     }
 
     // private constructor restricted to this class itself

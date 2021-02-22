@@ -58,6 +58,15 @@ public class DriveTrain extends Subsystem {
         return isBusy;
     }
 
+    public void set(double speed) {
+        HowlersHardware robot = HowlersHardware.getInstance();
+
+        robot.rightBack.set(speed);
+        robot.rightFront.set(speed);
+        robot.leftFront.set(speed);
+        robot.leftBack.set(speed);
+    }
+
 
 
     public void stop() {

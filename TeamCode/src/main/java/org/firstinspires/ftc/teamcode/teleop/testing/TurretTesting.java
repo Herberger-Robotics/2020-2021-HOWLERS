@@ -67,21 +67,6 @@ public class TurretTesting extends OpMode
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
 
-
-    @Config
-    public static class RobotConstants {
-        public static double flywheelP = 10;
-        public static double flywheelI = 0;
-        public static double flywheelD = 0;
-        public static double flywheelF = 0;
-        public static double SPEED_OVERRIDE = 0;
-        public static double flywheelSETPOINT = 1000;
-        public static double flywheelTOLERANCE = 0.01;
-        public static boolean invertFlywheel = true;
-
-        // other constants
-    }
-
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -91,7 +76,7 @@ public class TurretTesting extends OpMode
 
         robot.init(hardwareMap, false, true, true, false);
 
-        robot.flywheel.setInverted(RobotConstants.invertFlywheel);
+        robot.flywheel.setInverted(HowlersHardware.RobotConstants.invertFlywheel);
 
         driverOp = new GamepadEx(gamepad1);
         toolOp = new GamepadEx(gamepad2);
@@ -115,7 +100,7 @@ public class TurretTesting extends OpMode
     public void start() {
         runtime.reset();
         robot.turret.turretPID.setSetPoint(setPoint);
-        robot.turret.turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
+        robot.turret.turretPID.setTolerance(HowlersHardware.RobotConstants.flywheelTOLERANCE);
         //_turretPID.control(robot.flywheel);
         //CommandScheduler.getInstance().schedule(basicDrive);
         //CommandScheduler.getInstance().schedule(manualTurretController);
@@ -130,7 +115,7 @@ public class TurretTesting extends OpMode
         robot.feederMotor.set(-1);
 
         if(driverOp.gamepad.a) {
-            setPoint = RobotConstants.flywheelSETPOINT;
+            setPoint = HowlersHardware.RobotConstants.flywheelSETPOINT;
         } else if(driverOp.gamepad.b) {
             setPoint = 0;
         }
@@ -138,12 +123,12 @@ public class TurretTesting extends OpMode
         currentVelocity = robot.flywheel.getVelocity();
 
         robot.turret.turretPID.setSetPoint(setPoint);
-        robot.turret.turretPID.setTolerance(RobotConstants.flywheelTOLERANCE);
-        robot.turret.turretPID.setPIDF(RobotConstants.flywheelP , RobotConstants.flywheelI  , RobotConstants.flywheelD, RobotConstants.flywheelF);
+        robot.turret.turretPID.setTolerance(HowlersHardware.RobotConstants.flywheelTOLERANCE);
+        robot.turret.turretPID.setPIDF(HowlersHardware.RobotConstants.flywheelP , HowlersHardware.RobotConstants.flywheelI  , HowlersHardware.RobotConstants.flywheelD, HowlersHardware.RobotConstants.flywheelF);
 
         //robot.flywheel.set(1);
-        if(RobotConstants.SPEED_OVERRIDE > 0) {
-            robot.flywheel.set(RobotConstants.SPEED_OVERRIDE);
+        if(HowlersHardware.RobotConstants.SPEED_OVERRIDE > 0) {
+            robot.flywheel.set(HowlersHardware.RobotConstants.SPEED_OVERRIDE);
         } else {
                 //robot.flywheel.set(1);
                 robot.flywheel.setVelocity(robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));

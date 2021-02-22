@@ -67,16 +67,6 @@ public class FTCDashboardTesting extends OpMode
     double counter = 0;
 
 
-    @Config
-    public static class RobotConstants {
-        public static double flywheelP = 0;
-        public static double flywheelI = 0;
-        public static double flywheelD = 0;
-
-        // other constants
-    }
-
-
     /*
      * Code to run ONCE when the driver hits INIT
      */

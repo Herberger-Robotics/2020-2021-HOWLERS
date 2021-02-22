@@ -76,20 +76,6 @@ public class OpenCVTesting extends OpMode
 
     double currentVelocity = 0;
 
-    @Config
-    public static class RobotConstants {
-        public static double flywheelP = 10;
-        public static double flywheelI = 0;
-        public static double flywheelD = 0;
-        public static double flywheelF = 0;
-        public static double SPEED_OVERRIDE = 0;
-        public static double flywheelSETPOINT = 1000;
-        public static double flywheelTOLERANCE = 0.01;
-        public static boolean invertFlywheel = true;
-
-        // other constants
-    }
-
     /*
      * Code to run ONCE when the driver hits INIT
      */

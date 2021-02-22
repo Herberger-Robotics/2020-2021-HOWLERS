@@ -17,9 +17,10 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvInternalCamera2;
+import org.openftc.opencvrepackaged.OpenCvNativeLibCorruptedException;
 
-@Autonomous(name="Howlers Auto")
-public class HowlersAuto extends OpMode {
+@Autonomous(name="Howlers Auto w/ Rings")
+public class AutoWithRingPickup extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     HowlersHardware robot;
@@ -39,6 +40,7 @@ public class HowlersAuto extends OpMode {
         SHOOT,
         LOOK_AT_STACK,
         READ_STACK,
+        PROCESS_RINGS,
         TURN_FOR_WOBBLE,
         POSITION_WOBBLE,
         DRIVE_TO_WOBBLE,
@@ -47,6 +49,23 @@ public class HowlersAuto extends OpMode {
         PARK_ZERO,
         END,
     }
+
+    public enum FourRingState {
+        START,
+        PICK_UP_RINGS,
+        FINISHED,
+    }
+    public FourRingState fourRingState = FourRingState.START;
+
+    public enum OneRingState {
+        START,
+        SHIFT_LEFT,
+        PICK_UP_RINGS,
+        SHOOT_RINGS,
+        DRIVE_TO_LINE,
+        FINISHED,
+    }
+    public OneRingState oneRingState = OneRingState.START;
 
     public enum StackHeight {
         ZERO,
@@ -108,6 +127,7 @@ public class HowlersAuto extends OpMode {
     @Override
     public void loop() {
         flywheelController();
+        telemetryController();
 
         switch(state) {
             case PICK_UP_WOBBLE: {
@@ -154,17 +174,43 @@ public class HowlersAuto extends OpMode {
             }break;
             case READ_STACK: {
                 if(stackHeight != null) {
-                    encoderDrive(robot.driveTrain.getSpeed(),0.6,0.6);
+                    switch(stackHeight) {
+                        case ZERO: {
+                            encoderDrive(robot.driveTrain.getSpeed(), 0.6, 0.6);
+                            state = State.TURN_FOR_WOBBLE;
+                        } break;
+                        case ONE: {
+                            processOneRing();
+                            state = State.PROCESS_RINGS;
+                        } break;
+                        case FOUR: {
+                            processFourRings();
+                            state = State.PROCESS_RINGS;
+                        } break;
+                    }
+
                 }
-                state = State.TURN_FOR_WOBBLE;
+            } break;
+            case PROCESS_RINGS: {
+                if(stackHeight == StackHeight.ONE) {
+                    if(oneRingState == OneRingState.FINISHED) {
+                        encoderDrive(robot.driveTrain.getSpeed(), 0.6, 0.6);
+                    } else {
+                        processOneRing();
+                    }
+                } else if(stackHeight == StackHeight.FOUR) {
+                    if(fourRingState == FourRingState.FINISHED) {
+                        encoderDrive(robot.driveTrain.getSpeed(), 0.6, 0.6);
+                    } else {
+                        processFourRings();
+                    }
+                }
             } break;
             case TURN_FOR_WOBBLE: {
                 if(!robot.driveTrain.isBusy()) {
                     robot.driveTrain.setSpeed(0.5);
                     if(stackHeight == StackHeight.ZERO || stackHeight == StackHeight.FOUR) {
                         drive(Direction.BACKWARD,0.9);
-                    } else {
-                        drive(Direction.BACKWARD,0.1);
                     }
                     state = State.POSITION_WOBBLE;
                 }
@@ -223,14 +269,67 @@ public class HowlersAuto extends OpMode {
         robot.turret.turretPID.setSetPoint(setPoint);
         robot.flywheel.setVelocity(robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
 
-        packet.put("flywheelSetSpeed", robot.flywheel.get());
-        packet.put("PIDCalculation", robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
-        packet.put("PIDPositionError", robot.turret.turretPID.getPositionError());
-        packet.put("Current Velocity", robot.flywheel.getVelocity());
-        packet.put("Set Point", setPoint);
+    }
+
+    public void telemetryController() {
+
+        if(HowlersHardware.RobotConstants.displayPID == true) {
+            packet.put("flywheelSetSpeed", robot.flywheel.get());
+            packet.put("PIDCalculation", robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
+            packet.put("PIDPositionError", robot.turret.turretPID.getPositionError());
+            packet.put("Current Velocity", robot.flywheel.getVelocity());
+            packet.put("Set Point", setPoint);
+        }
+
         packet.put("Ring Height", ringDetector.getHeight());
+        packet.put("Autonomous State", state);
+        packet.put("One Ring State", oneRingState);
+        packet.put("Four ring State", fourRingState);
 
         dashboard.sendTelemetryPacket(packet);
+
+    }
+
+    public void processOneRing() {
+        switch(oneRingState) {
+            case START: {
+                drive(Direction.LEFT,0.2);
+                robot.intakeMotor.set(1);
+                setPoint = 830;
+                oneRingState = OneRingState.PICK_UP_RINGS;
+            } break;
+            case SHIFT_LEFT: {
+                if(!robot.driveTrain.isBusy()) {
+                    drive(Direction.FORWARD,0.5);
+                    oneRingState = OneRingState.PICK_UP_RINGS;
+                }
+            } break;
+            case PICK_UP_RINGS: {
+                if(!robot.driveTrain.isBusy()) {
+                    robot.intakeMotor.set(0);
+                    drive(Direction.BACKWARD,0.2);
+                    feed();
+                    intake();
+                    oneRingState = OneRingState.SHOOT_RINGS;
+                }
+            } break;
+            case SHOOT_RINGS: {
+                if(!robot.driveTrain.isBusy() && !robot.intakeMotor.busy() &&!robot.feederMotor.busy()) {
+                    setPoint = 0;
+                    drive(Direction.BACKWARD,0.3);
+                    oneRingState = OneRingState.DRIVE_TO_LINE;
+                }
+            } break;
+            case DRIVE_TO_LINE: {
+                if(!robot.driveTrain.isBusy()) {
+                    oneRingState = OneRingState.FINISHED;
+                }
+            } break;
+        }
+    }
+
+    public void processFourRings() {
+
     }
 
     public void stop() {
@@ -267,7 +366,7 @@ public class HowlersAuto extends OpMode {
         robot.rightBack.set(Math.abs(speed));
         robot.leftFront.set(Math.abs(speed));
         robot.leftBack.set(Math.abs(speed));
-        }
+    }
 
     public void drive(Direction direction, double rotations) {
         double speed = robot.driveTrain.getSpeed();
@@ -337,7 +436,7 @@ public class HowlersAuto extends OpMode {
         robot.intakeMotor.runToPosition();
 
         robot.intakeMotor.set(Math.abs(0.5));
-        }
+    }
 
     public void pickUpWobble() {
         int wobbleTarget;

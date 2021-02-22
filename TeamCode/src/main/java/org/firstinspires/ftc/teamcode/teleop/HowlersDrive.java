@@ -132,7 +132,7 @@ public class HowlersDrive extends OpMode
         robot.turret.turretPID.setSetPoint(setPoint);
 
         if(driverOp.getButton(GamepadKeys.Button.DPAD_UP)) {
-            setPoint = 900;
+            setPoint = 850;
         } else if(driverOp.getButton(GamepadKeys.Button.DPAD_RIGHT)) {
             setPoint = 830;
         } else if(driverOp.getButton(GamepadKeys.Button.DPAD_DOWN)) {
@@ -150,8 +150,10 @@ public class HowlersDrive extends OpMode
 
         if(driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
             speed = 0.25;
-        } else {
+        } else if(driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
             speed = 0.75;
+        } else {
+            speed = 0.6;
         }
 
         double rotation = driverOp.getLeftX() * speed;

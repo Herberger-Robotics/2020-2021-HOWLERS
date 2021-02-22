@@ -280,6 +280,7 @@ public abstract class HowlersAutoFunction extends LinearOpMode {
             robot.feederMotor.runUsingEncoder();
         }
     }
+
     public void intake() {
         int intakeTarget;
 
