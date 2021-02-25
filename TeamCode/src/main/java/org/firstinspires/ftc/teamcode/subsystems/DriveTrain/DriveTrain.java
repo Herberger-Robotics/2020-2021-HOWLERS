@@ -14,7 +14,7 @@ public class DriveTrain extends Subsystem {
 
     private final MecanumDrive driveTrain;
 
-    private double speed = 1;
+    private double speed = 0.6;
 
     public double setSpeed(double setter) {
         speed = setter;

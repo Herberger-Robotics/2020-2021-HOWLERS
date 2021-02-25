@@ -43,6 +43,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardwaremaps.HowlersHardware;
+import org.firstinspires.ftc.teamcode.subsystems.Scheduler.Commands.Drive;
+import org.firstinspires.ftc.teamcode.subsystems.Subsystem;
 import org.firstinspires.ftc.teamcode.subsystems.Turret.Turret;
 
 @TeleOp(name="HowlersDrive", group="Iterative Opmode")
@@ -62,9 +64,29 @@ public class HowlersDrive extends OpMode
     double currentVelocity = 0;
     double setPoint = 0;
 
+    boolean aButtonHeld = false;
+    boolean triggerHeld = false;
+
+
     FtcDashboard dashboard = FtcDashboard.getInstance();
     TelemetryPacket packet = new TelemetryPacket();
 
+    public enum AutoShooterState {
+        MANUAL,
+        ACTIVE,
+        TAKE_CONTROL,
+        START_FLYWHEEL,
+        RELINQUISH_CONTROL,
+    }
+
+    public enum DriveMode {
+        SLOW,
+        FAST,
+    }
+
+    public DriveMode driveMode = DriveMode.FAST;
+
+    public AutoShooterState autoShooterState = AutoShooterState.MANUAL;
         /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -119,6 +141,7 @@ public class HowlersDrive extends OpMode
         flywheelController();
         intakeController();
         wobbleController();
+        //shootingController();
 
         packet.put("Current Velocity", robot.flywheel.getVelocity());
         packet.put("Set Point", setPoint);
@@ -130,71 +153,160 @@ public class HowlersDrive extends OpMode
         currentVelocity = robot.flywheel.getVelocity();
 
         robot.turret.turretPID.setSetPoint(setPoint);
-
-        if(driverOp.getButton(GamepadKeys.Button.DPAD_UP)) {
-            setPoint = 850;
-        } else if(driverOp.getButton(GamepadKeys.Button.DPAD_RIGHT)) {
-            setPoint = 830;
-        } else if(driverOp.getButton(GamepadKeys.Button.DPAD_DOWN)) {
-            setPoint = 750;
-        } else if(driverOp.getButton(GamepadKeys.Button.DPAD_LEFT)) {
-            setPoint = 0;
+        if(toolOp.gamepad.left_bumper) {
+            setPoint = -40;
+        } else {
+            if (robot.turret.getSubsystemMode() == Subsystem.SubsystemMode.DRIVER_CONTROLLED) {
+                if (driverOp.getButton(GamepadKeys.Button.DPAD_UP) || toolOp.getButton(GamepadKeys.Button.DPAD_UP)) {
+                    setPoint = 850;
+                } else if (driverOp.getButton(GamepadKeys.Button.DPAD_RIGHT) || toolOp.getButton(GamepadKeys.Button.DPAD_RIGHT)) {
+                    setPoint = 830;
+                } else if (driverOp.getButton(GamepadKeys.Button.DPAD_DOWN) || toolOp.getButton(GamepadKeys.Button.DPAD_DOWN)) {
+                    setPoint = 750;
+                } else if (driverOp.getButton(GamepadKeys.Button.DPAD_LEFT) || toolOp.getButton(GamepadKeys.Button.DPAD_LEFT)) {
+                    setPoint = 0;
+                }
+            }
         }
 
         robot.flywheel.setVelocity(robot.turret.turretPID.calculate(robot.flywheel.getVelocity()));
     }
 
     public void driveTrainController() {
-        double speed;
-        double strafe = 0;
-
-        if(driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
-            speed = 0.25;
-        } else if(driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
-            speed = 0.75;
-        } else {
-            speed = 0.6;
-        }
-
-        double rotation = driverOp.getLeftX() * speed;
-        double forward = driverOp.getLeftY() * speed;
+        double speed = robot.driveTrain.getSpeed();
 
         boolean leftBumperState = driverOp.getButton(GamepadKeys.Button.LEFT_BUMPER);
         boolean rightBumperState = driverOp.getButton(GamepadKeys.Button.RIGHT_BUMPER);
 
-        if(leftBumperState && rightBumperState) strafe = 0;
-        else if (rightBumperState) strafe = 1 * speed;
-        else if (leftBumperState) strafe = -1 * speed;
+        double leftTrigger = driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
+        double rightTrigger = driverOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
 
-        robot.driveTrain.drive(strafe, forward, rotation);
+        if(robot.driveTrain.getSubsystemMode() == Subsystem.SubsystemMode.DRIVER_CONTROLLED) {
+            if (leftBumperState) {
+                if(!triggerHeld) {
+                    switch (driveMode) {
+                        case FAST: {
+                            robot.driveTrain.setSpeed(0.25);
+                            driveMode = DriveMode.SLOW;
+                        } break;
+                        case SLOW: {
+                            robot.driveTrain.setSpeed(0.6);
+                            driveMode = DriveMode.FAST;
+                        } break;
+                    }
+                    triggerHeld = true;
+                }
+            } else {
+                triggerHeld = false;
+            }
+
+            double strafe = 0;
+            double rotation = driverOp.getLeftX() * speed;
+            double forward = driverOp.getLeftY() * speed;
+
+            if (leftTrigger > 0.2 && rightTrigger > 0.2) {
+                strafe = 0;
+            } else if(leftTrigger > 0.2) {
+                strafe = leftTrigger *  -1 * speed;
+            } else if(rightTrigger > 0.2) {
+                strafe = rightTrigger * 1 * speed;
+            }
+
+
+            robot.driveTrain.drive(strafe, forward, rotation);
+        }
     }
 
     public void intakeController() {
-        if (driverOp.gamepad.a) {
-            robot.intakeMotor.set(-1);
-        } else if(driverOp.gamepad.b) {
-            robot.intakeMotor.set(1);
-        } else {
-            robot.intakeMotor.set(0);
-        }
-        if(driverOp.gamepad.y) {
-            robot.feederMotor.set(1);
-        } else if(driverOp.gamepad.x) {
-            robot.feederMotor.set(-1);
-        } else {
-            robot.feederMotor.set(0);
+        if(robot.intake.getSubsystemMode() == Subsystem.SubsystemMode.DRIVER_CONTROLLED) {
+            if(toolOp.gamepad.right_bumper) {
+                robot.intakeMotor.set(0.2);
+                robot.feederMotor.set(0.2);
+            } else {
+                if (driverOp.gamepad.a || toolOp.gamepad.a) {
+                    robot.intakeMotor.set(-1);
+                } else if (driverOp.gamepad.b || toolOp.gamepad.b) {
+                    robot.intakeMotor.set(1);
+                } else {
+                    robot.intakeMotor.set(0);
+                }
+                if (driverOp.gamepad.y || toolOp.gamepad.y) {
+                    robot.feederMotor.set(1);
+                } else if (driverOp.gamepad.x || toolOp.gamepad.x) {
+                    robot.feederMotor.set(-1);
+                } else {
+                    robot.feederMotor.set(0);
+                }
+            }
         }
     }
 
     public void wobbleController() {
-        if (toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
-            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) * 0.4);
-        } else if(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.2) {
-            robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * -0.4 );
-        } else {
-            robot.wobbleGoal.set(0);
+        if(robot.intake.getSubsystemMode() == Subsystem.SubsystemMode.DRIVER_CONTROLLED) {
+            if (toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.2) {
+                robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) * 0.4);
+            } else if (toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.2) {
+                robot.wobbleGoal.set(toolOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * -0.4);
+            } else {
+                robot.wobbleGoal.set(0);
+            }
         }
-        telemetry.addData("Wobble Power", robot.wobbleGoal.get());
+    }
+    /*
+    public void shootingController() {
+        if(toolOp.gamepad.a && autoShooterState == AutoShooterState.MANUAL && !aButtonHeld) {
+            autoShooterState = AutoShooterState.TAKE_CONTROL;
+            aButtonHeld = true;
+
+        } else if(toolOp.gamepad.a && autoShooterState != AutoShooterState.MANUAL && !aButtonHeld) {
+            autoShooterState = AutoShooterState.RELINQUISH_CONTROL;
+            aButtonHeld = true;
+        } else {
+            aButtonHeld = false;
+        }
+
+        switch(autoShooterState) {
+            case TAKE_CONTROL: {
+                robot.turret.robotControl();
+                robot.intake.robotControl();
+                setPoint = 830;
+
+                autoShooterState = AutoShooterState.ACTIVE;
+            } break;
+            case ACTIVE: {
+                if(!robot.intakeMotor.busy() && !robot.feederMotor.busy()) {
+                    setPoint = 0;
+                    autoShooterState = AutoShooterState.RELINQUISH_CONTROL;
+                }
+            } break;
+            case RELINQUISH_CONTROL: {
+                robot.turret.robotControl();
+                robot.intake.robotControl();
+                robot.intakeMotor.runUsingEncoder();
+                robot.feederMotor.runUsingEncoder();
+                setPoint = 0;
+            }
+        }
+    } */
+
+    public void feed() {
+        int feederTarget;
+        feederTarget = robot.feederMotor.getEncoderCount() - (int)((4.5) * (1497.325));
+        robot.feederMotor.setTarget(feederTarget);
+        robot.feederMotor.runToPosition();
+        robot.feederMotor.set(Math.abs(0.5));
+    }
+
+    public void intake() {
+        int intakeTarget;
+
+        intakeTarget = robot.intakeMotor.getEncoderCount() - (int)((4.5) * (1497.325));
+
+        robot.intakeMotor.setTarget(intakeTarget);
+
+        robot.intakeMotor.runToPosition();
+
+        robot.intakeMotor.set(Math.abs(0.5));
     }
 
     /*

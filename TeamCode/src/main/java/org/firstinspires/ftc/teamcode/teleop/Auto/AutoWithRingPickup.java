@@ -293,20 +293,20 @@ public class AutoWithRingPickup extends OpMode {
     public void processOneRing() {
         switch(oneRingState) {
             case START: {
-                drive(Direction.LEFT,0.2);
-                robot.intakeMotor.set(1);
+                drive(Direction.RIGHT,0.1);
+                intake();
                 setPoint = 830;
-                oneRingState = OneRingState.PICK_UP_RINGS;
+                oneRingState = OneRingState.SHIFT_LEFT;
             } break;
             case SHIFT_LEFT: {
                 if(!robot.driveTrain.isBusy()) {
-                    drive(Direction.FORWARD,0.5);
+                    drive(Direction.FORWARD,0.9);
+                    intake();
                     oneRingState = OneRingState.PICK_UP_RINGS;
                 }
             } break;
             case PICK_UP_RINGS: {
                 if(!robot.driveTrain.isBusy()) {
-                    robot.intakeMotor.set(0);
                     drive(Direction.BACKWARD,0.2);
                     feed();
                     intake();
